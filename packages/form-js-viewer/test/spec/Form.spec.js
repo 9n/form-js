@@ -60,6 +60,7 @@ describe('Form', function() {
       invoiceNumber: 'C-123',
       approved: true,
       approvedBy: 'John Doe',
+      mailto: ['regional-manager', 'approver'],
       product: 'camunda-cloud',
       language: 'english',
       documents: [
@@ -89,7 +90,7 @@ describe('Form', function() {
     });
 
     // then
-    expect(form.get('formFieldRegistry').getAll()).to.have.length(11);
+    expect(form.get('formFieldRegistry').getAll()).to.have.length(12);
   });
 
 
@@ -122,6 +123,7 @@ describe('Form', function() {
         invoiceNumber: 'C-123',
         approved: true,
         approvedBy: 'John Doe',
+        mailto: ['regional-manager', 'approver'],
         product: 'camunda-cloud',
         language: 'english',
         documents: [
@@ -141,7 +143,7 @@ describe('Form', function() {
       await form.importSchema(schemaNoIds, data);
 
       // then
-      expect(form.get('formFieldRegistry').getAll()).to.have.length(11);
+      expect(form.get('formFieldRegistry').getAll()).to.have.length(12);
 
       form.get('formFieldRegistry').forEach(field => {
         expect(field.id).to.exist;
@@ -158,6 +160,7 @@ describe('Form', function() {
         invoiceNumber: 'C-123',
         approved: true,
         approvedBy: 'John Doe',
+        mailto: ['regional-manager', 'approver'],
         product: 'camunda-cloud',
         language: 'english',
         documents: [
@@ -177,7 +180,7 @@ describe('Form', function() {
       await form.importSchema(schema, data);
 
       // then
-      expect(form.get('formFieldRegistry').getAll()).to.have.length(11);
+      expect(form.get('formFieldRegistry').getAll()).to.have.length(12);
     });
 
 
@@ -332,6 +335,7 @@ describe('Form', function() {
         amount: null,
         approved: false,
         approvedBy: '',
+        mailto: [],
         product: null,
         language: null
       });
@@ -699,6 +703,7 @@ describe('Form', function() {
       amount: 456,
       approved: true,
       approvedBy: 'John Doe',
+      mailto: [],
       product: null,
       language: null
     });
@@ -717,6 +722,7 @@ describe('Form', function() {
       amount: 456,
       approved: true,
       approvedBy: 'John Doe',
+      mailto: [],
       product: null,
       language: null
     });
@@ -761,6 +767,7 @@ describe('Form', function() {
       amount: null,
       approved: false,
       approvedBy: '',
+      mailto: [],
       product: null,
       language: null
     });
@@ -835,6 +842,7 @@ describe('Form', function() {
         amount: 456,
         approved: false,
         approvedBy: '',
+        mailto: [],
         product: null,
         language: null
       });
