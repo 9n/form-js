@@ -1,7 +1,4 @@
-import {
-  CollapsibleEntry,
-  Group
-} from '../components';
+import { ListGroup } from '@bpmn-io/properties-panel/src/components';
 
 import { ValueEntry } from '../entries';
 
@@ -14,14 +11,21 @@ import {
   isUndefined
 } from 'min-dash';
 
-
+// todo(pinussilvestrus): move me to a normal group with nested list
+// (cf. https://github.com/bpmn-io/form-js/issues/197#issuecomment-1116047809)
 export default function ValuesGroup(field, editField) {
   const {
-    id,
-    values = []
+    values = [],
+    type
   } = field;
 
-  const addEntry = () => {
+  if (type !== 'radio' && type !== 'select') {
+    return null;
+  }
+
+  const addEntry = (event) => {
+    event.stopPropagation();
+
     const index = values.length + 1;
 
     const entry = {
@@ -50,25 +54,41 @@ export default function ValuesGroup(field, editField) {
     };
   };
 
-  const hasEntries = values.length > 0;
+  const items = values.map((value, index) => {
+    const {
+      label
+    } = value;
 
-  return (
-    <Group label="Values" addEntry={ addEntry } hasEntries={ hasEntries }>
-      {
-        values.map((value, index) => {
-          const { label } = value;
+    const removeEntry = (event) => {
+      event.stopPropagation();
 
-          const removeEntry = () => {
-            editField(field, [ 'values' ], arrayRemove(values, index));
-          };
+      editField(field, [ 'values' ], arrayRemove(values, index));
+    };
 
-          return (
-            <CollapsibleEntry key={ `${ id }-${ index }` } label={ label } removeEntry={ removeEntry }>
-              <ValueEntry editField={ editField } field={ field } index={ index } validate={ validateFactory } />
-            </CollapsibleEntry>
-          );
-        })
-      }
-    </Group>
-  );
+    const id = `${ field.id }-${ index }`;
+
+    return {
+      id,
+      label: label || '',
+      entries: ValueEntry({
+        editField,
+        field,
+        idPrefix: id,
+        index,
+        validate: validateFactory,
+        value
+      }),
+      autoFocusEntry: id + '-label',
+      remove: removeEntry
+    };
+  });
+
+  return {
+    add: addEntry,
+    component: ListGroup,
+    id: 'values',
+    items,
+    label: 'Values',
+    shouldSort: false
+  };
 }

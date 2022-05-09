@@ -1,3 +1,8 @@
+const path = require('path');
+const {
+  NormalModuleReplacementPlugin
+} = require('webpack');
+
 const coverage = process.env.COVERAGE;
 
 // configures browsers to run test against
@@ -92,6 +97,33 @@ module.exports = function(karma) {
           } : []
         )
       },
+
+      // todo(pinussilvestrus): that should not be needed
+      plugins: [
+        new NormalModuleReplacementPlugin(
+          /^preact(\/[^/]+)?$/,
+          function(resource) {
+
+            const replMap = {
+              'preact/hooks': path.resolve('../../node_modules/preact/hooks/dist/hooks.module.js'),
+              'preact/jsx-runtime': path.resolve('../../node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js'),
+              'preact': path.resolve('../../node_modules/preact/dist/preact.module.js')
+            };
+
+            const replacement = replMap[resource.request];
+
+            if (!replacement) {
+              return;
+            }
+
+            resource.request = replacement;
+          }
+        ),
+        new NormalModuleReplacementPlugin(
+          /^preact\/hooks/,
+          path.resolve('../../node_modules/preact/hooks/dist/hooks.module.js')
+        )
+      ],
       resolve: {
         mainFields: [
           'browser',

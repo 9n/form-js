@@ -1,49 +1,115 @@
 import { get } from 'min-dash';
 
-import { TextInputEntry } from '../components';
+import { useService } from '../../../hooks';
+
+import { TextFieldEntry } from '@bpmn-io/properties-panel/src/components';
+
 
 export default function CustomValueEntry(props) {
   const {
     editField,
     field,
+    idPrefix,
+    index,
+    validate,
+    value
+  } = props;
+
+  // todo(pinussilvestrus): can we make that shorter?
+  const entries = [
+    {
+      component: Key,
+      editField,
+      field,
+      id: idPrefix + '-key',
+      idPrefix,
+      index,
+      validate,
+      value
+    },
+    {
+      component: Value,
+      editField,
+      field,
+      idPrefix,
+      id: idPrefix + '-value',
+      index,
+      validate,
+      value
+    }
+  ];
+
+  return entries;
+}
+
+function Key(props) {
+  const {
+    editField,
+    field,
+    id,
     index,
     validate
   } = props;
 
-  const getKey = () => {
-    return Object.keys(get(field, [ 'properties' ]))[ index ];
+  const debounce = useService('debounce');
+
+  const setValue = (value) => {
+    const properties = get(field, [ 'properties' ]);
+    const key = Object.keys(properties)[ index ];
+    return editField(field, 'properties', updateKey(properties, key, value));
   };
 
   const getValue = () => {
-    return get(field, [ 'properties', getKey() ]);
+    return Object.keys(get(field, [ 'properties' ]))[ index ];
   };
 
-  const onChange = (key) => {
-    const properties = get(field, [ 'properties' ]);
+  return TextFieldEntry({
+    debounce,
+    element: field,
+    getValue,
+    id,
+    label: 'Key',
+    setValue,
 
-    return (value) => {
-      if (key === 'value') {
-        editField(field, 'properties', updateValue(properties, getKey(), value));
-      } else if (key === 'key') {
-        editField(field, 'properties', updateKey(properties, getKey(), value));
-      }
-    };
-  };
-
-  return <>
-    <TextInputEntry
-      id={ `value-key-${ index }` }
-      label="Key"
-      onChange={ onChange('key') }
-      value={ getKey() }
-      validate={ validate(getKey()) } />
-    <TextInputEntry
-      id={ `value-value-${ index }` }
-      label="Value"
-      onChange={ onChange('value') }
-      value={ getValue() } />
-  </>;
+    // todo(pinussilvestrus): make it simpler
+    validate: validate(getValue())
+  });
 }
+
+function Value(props) {
+  const {
+    editField,
+    field,
+    id,
+    index,
+    validate
+  } = props;
+
+  const debounce = useService('debounce');
+
+  const setValue = (value) => {
+    const properties = get(field, [ 'properties' ]);
+    const key = Object.keys(properties)[ index ];
+    editField(field, 'properties', updateValue(properties, key, value));
+  };
+
+  const getValue = () => {
+    const properties = get(field, [ 'properties' ]);
+    const key = Object.keys(properties)[ index ];
+    return get(field, [ 'properties', key ]);
+  };
+
+  return TextFieldEntry({
+    debounce,
+    element: field,
+    getValue,
+    id,
+    label: 'Value',
+    setValue,
+    validate: validate(getValue())
+  });
+}
+
 
 // helpers //////////
 

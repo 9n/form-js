@@ -1,3 +1,8 @@
+// todo(pinussilvestrus): that should not be needed
+import PropertiesPanel from '@bpmn-io/properties-panel/src/PropertiesPanel';
+
+import { PanelHeaderProvider } from './PanelHeaderProvider';
+
 import {
   CustomValuesGroup,
   GeneralGroup,
@@ -6,51 +11,22 @@ import {
 } from './groups';
 
 import {
-  INPUTS,
-  textToLabel
-} from './Util';
-
-import {
   useService
 } from '../../hooks';
 
-import { iconsByType } from '../palette/icons';
-
-const labelsByType = {
-  button: 'BUTTON',
-  checkbox: 'CHECKBOX',
-  columns: 'COLUMNS',
-  default: 'FORM',
-  number: 'NUMBER',
-  radio: 'RADIO',
-  select: 'SELECT',
-  text: 'TEXT',
-  textfield: 'TEXT FIELD',
-};
-
 function getGroups(field, editField) {
-  const { type } = field;
-
   const groups = [
-    GeneralGroup(field, editField)
+    GeneralGroup(field, editField),
+    ValuesGroup(field, editField),
+    ValidationGroup(field, editField),
+    CustomValuesGroup(field, editField)
   ];
 
-  if (type === 'radio' || type === 'select') {
-    groups.push(ValuesGroup(field, editField));
-  }
-
-  if (INPUTS.includes(type) && type !== 'checkbox') {
-    groups.push(ValidationGroup(field, editField));
-  }
-
-  if (type !== 'default') {
-    groups.push(CustomValuesGroup(field, editField));
-  }
-
-  return groups;
+  // contract: if a group returns null, it should not be displayed at all
+  return groups.filter(group => group !== null);
 }
 
-export default function PropertiesPanel(props) {
+export default function FormPropertiesPanel(props) {
   const {
     editField,
     field
@@ -66,12 +42,6 @@ export default function PropertiesPanel(props) {
 
   const onBlur = () => eventBus.fire('propertiesPanel.focusout');
 
-  const { type } = field;
-
-  const Icon = iconsByType[ type ];
-
-  const label = labelsByType[ type ];
-
   return (
     <div
       class="fjs-properties-panel"
@@ -79,6 +49,12 @@ export default function PropertiesPanel(props) {
       onFocusCapture={ onFocus }
       onBlurCapture={ onBlur }
     >
+      <PropertiesPanel
+        element={ field }
+        groups={ getGroups(field, editField) }
+        headerProvider={ PanelHeaderProvider }
+      />
+      {/* todo(pinussilvestrus): remove old panel
       <div class="fjs-properties-panel-header">
         <div class="fjs-properties-panel-header-icon">
           <Icon width="36" height="36" viewBox="0 0 54 54" />
@@ -96,7 +72,7 @@ export default function PropertiesPanel(props) {
       </div>
       {
         getGroups(field, editField)
-      }
+      } */}
     </div>
   );
 }
